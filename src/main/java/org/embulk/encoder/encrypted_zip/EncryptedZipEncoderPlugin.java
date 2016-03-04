@@ -29,9 +29,9 @@ public class EncryptedZipEncoderPlugin
     public interface PluginTask
             extends Task
     {
-        @Config("prefix")
+        @Config("filename")
         @ConfigDefault("\"result.%1$03d.%1$03d\"")
-        public String getPrefix();
+        public String getFilename();
 
         @Config("password")
         public String getPassword();
@@ -72,7 +72,7 @@ class ZipCompressArchiveProvider implements OutputStreamFileOutput.Provider {
         this.output = new FileOutputOutputStream(fileOutput,
                 task.getBufferAllocator(), FileOutputOutputStream.CloseMode.FLUSH);
         this.baseNum = baseNumSeq.getAndIncrement();
-        this.entryNamePrefix = task.getPrefix();
+        this.entryNamePrefix = task.getFilename();
 
         this.parameters = new ZipParameters();
         parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);

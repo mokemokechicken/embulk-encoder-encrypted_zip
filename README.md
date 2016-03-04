@@ -18,7 +18,7 @@ out:
   type: file type output plugin
   encoders:
     - type: encrypted_zip
-      prefix: 'result.%03d.%03d'
+      filename: 'result.%03d.%03d.csv'
       password: 'mypassword'
 ```
 
