@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.common.base.Optional;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.io.ZipOutputStream;
 import net.lingala.zip4j.util.Zip4jConstants;
@@ -30,19 +29,12 @@ public class EncryptedZipEncoderPlugin
     public interface PluginTask
             extends Task
     {
-        // configuration option 1 (required integer)
-//        @Config("option1")
-//        public int getOption1();
+        @Config("prefix")
+        @ConfigDefault("\"result.%1$03d.%1$03d\"")
+        public String getPrefix();
 
-        // configuration option 2 (optional string, null is not allowed)
-        @Config("optoin2")
-        @ConfigDefault("\"myvalue\"")
-        public String getOption2();
-
-        // configuration option 3 (optional string, null is allowed)
-        @Config("optoin3")
-        @ConfigDefault("null")
-        public Optional<String> getOption3();
+        @Config("password")
+        public String getPassword();
 
         @ConfigInject
         public BufferAllocator getBufferAllocator();
@@ -52,7 +44,6 @@ public class EncryptedZipEncoderPlugin
     public void transaction(ConfigSource config, EncoderPlugin.Control control)
     {
         PluginTask task = config.loadConfig(PluginTask.class);
-
         control.run(task.dump());
     }
 
@@ -81,7 +72,7 @@ class ZipCompressArchiveProvider implements OutputStreamFileOutput.Provider {
         this.output = new FileOutputOutputStream(fileOutput,
                 task.getBufferAllocator(), FileOutputOutputStream.CloseMode.FLUSH);
         this.baseNum = baseNumSeq.getAndIncrement();
-        this.entryNamePrefix = "prefix";
+        this.entryNamePrefix = task.getPrefix();
 
         this.parameters = new ZipParameters();
         parameters.setCompressionMethod(Zip4jConstants.COMP_DEFLATE);
@@ -89,7 +80,7 @@ class ZipCompressArchiveProvider implements OutputStreamFileOutput.Provider {
         parameters.setEncryptFiles(true);
         parameters.setEncryptionMethod(Zip4jConstants.ENC_METHOD_STANDARD);
         parameters.setAesKeyStrength(Zip4jConstants.AES_STRENGTH_256);
-        parameters.setPassword("pass");
+        parameters.setPassword(task.getPassword());
     }
 
     @Override
@@ -103,20 +94,7 @@ class ZipCompressArchiveProvider implements OutputStreamFileOutput.Provider {
         if (tmpOut != null) {
             this.zipOutputStream = new ZipOutputStream(output);
             final String name =  String.format(entryNamePrefix, baseNum, count++);
-            File file = new File(name) {
-                @Override
-                public boolean exists() {return true;}
-                @Override
-                public boolean isDirectory() {return false;}
-                @Override
-                public String getAbsolutePath() {return name;}
-                @Override
-                public boolean isHidden() {return false;}
-                @Override
-                public long lastModified() {return System.currentTimeMillis();}
-                @Override
-                public long length() {return tmpOut.size();}
-            };
+            File file = createFile(name);
 
             try {
                 zipOutputStream.putNextEntry(file, parameters);
@@ -141,4 +119,24 @@ class ZipCompressArchiveProvider implements OutputStreamFileOutput.Provider {
             originalOutput.close();
         }
     }
+
+    private File createFile(final String name) {
+        return new File(name) {
+            @Override
+            public boolean exists() {return true;}
+            @Override
+            public boolean isDirectory() {return false;}
+            @Override
+            public String getAbsolutePath() {return name;}
+            @Override
+            public boolean isHidden() {return false;}
+            @Override
+            public long lastModified() {return System.currentTimeMillis();}
+            @Override
+            public long length() {return tmpOut.size();}
+            @Override
+            public boolean canWrite() {return true;}
+        };
+    }
+
 }
