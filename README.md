@@ -15,11 +15,15 @@ Encrypted Zip Encoder.
 
 ```yaml
 out:
-  type: file type output plugin
   encoders:
     - type: encrypted_zip
       filename: 'result.%03d.%03d.csv'
       password: 'mypassword'
+  type: file
+  path_prefix: ./path/to/output/data
+  file_ext: zip
+  formatter:
+    type: csv
 ```
 
 
