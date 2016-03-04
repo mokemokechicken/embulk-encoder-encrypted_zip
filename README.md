@@ -8,7 +8,7 @@ Encrypted Zip Encoder.
 
 ## Configuration
 
-- prefix: filename format in the zip archive file (string, default: `result.%1$03d.%1$03d`)
+- filename: filename format in the zip archive file (string, default: `result.%1$03d.%1$03d`)
 - password: encryption password (string, required)
 
 ## Example
