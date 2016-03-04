@@ -1,6 +1,6 @@
 # Encrypted Zip encoder plugin for Embulk
 
-TODO: Write short description here and build.gradle file.
+Encrypted Zip Encoder.
 
 ## Overview
 
@@ -8,19 +8,18 @@ TODO: Write short description here and build.gradle file.
 
 ## Configuration
 
-- **option1**: description (integer, required)
-- **option2**: description (string, default: `"myvalue"`)
-- **option3**: description (string, default: `null`)
+- prefix: description (string, default: `result.%1$03d.%1$03d`)
+- password: description (string, required)
 
 ## Example
 
 ```yaml
 out:
-  type: any output input plugin type
+  type: file type output plugin
   encoders:
     - type: encrypted_zip
-      option1: example1
-      option2: example2
+      prefix: 'result.%03d.%03d'
+      password: 'mypassword'
 ```
 
 
